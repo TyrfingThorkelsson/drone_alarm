@@ -29,6 +29,7 @@ paplay alarm.wav     # Linux
 # Linting & type checking (config in pyproject.toml)
 pip install -r requirements-dev.txt
 ./lint.sh                        # ruff check + ruff format --check + mypy
+pre-commit install               # run the same checks automatically on git commit
 ```
 
 There is no test suite or build step. All functions are type-annotated; keep new code typed so

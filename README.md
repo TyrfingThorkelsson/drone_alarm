@@ -46,6 +46,12 @@ pip install -r requirements-dev.txt
 ./lint.sh             # runs ruff check, ruff format --check, and mypy
 ```
 
+To run the same checks automatically before each commit, install the git hook once:
+
+```bash
+pre-commit install
+```
+
 Or run the tools individually:
 
 ```bash
