@@ -1,5 +1,14 @@
 # drone_alarm
 
+As far as government in Moscow is unable to implement air-defence alarm system, and there
+basically no "official" sources of information that provide up-to-date info regarding drone
+attacks rather then anonymous Telegram channels. So this project aims to provide a substitution
+for air-defence siren based on the messages in such channels.
+
+The project is primarily vibe-coded so use it on your own risk.
+
+## How it works
+
 A Telegram **user-bot** that monitors public channels for keywords. When a new message in a
 watched channel matches one of your regex keywords, it **plays an alarm sound** and **prints
 the message** to the console.
