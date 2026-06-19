@@ -56,6 +56,27 @@ def compile_patterns(keywords: list[str], case_sensitive: bool) -> list[Pattern]
     return patterns
 
 
+def build_proxy(cfg: Config) -> tuple[Any, ...] | None:
+    """Build a Telethon SOCKS5 proxy tuple from config, or None for a direct connection."""
+    proxy_cfg = cfg.get("proxy")
+    if not proxy_cfg:
+        return None
+    try:
+        import socks  # PySocks
+    except ImportError:
+        sys.exit("A proxy is configured but PySocks is not installed. Run: pip install PySocks")
+    if not proxy_cfg.get("host") or not proxy_cfg.get("port"):
+        sys.exit("proxy in config.yaml must set both 'host' and 'port'.")
+    return (
+        socks.SOCKS5,
+        proxy_cfg["host"],
+        int(proxy_cfg["port"]),
+        True,  # rdns: resolve hostnames through the proxy
+        proxy_cfg.get("username"),
+        proxy_cfg.get("password"),
+    )
+
+
 def format_alert(chat: Any, matched: list[str], text: str) -> str:
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     name = getattr(chat, "title", None) or getattr(chat, "username", None) or str(chat)
@@ -89,7 +110,10 @@ async def main() -> None:
     alarm = Alarm(sound_path)
 
     channels = cfg["channels"]
-    client = TelegramClient(cfg["session"], int(cfg["api_id"]), cfg["api_hash"])
+    proxy = build_proxy(cfg)
+    if proxy:
+        print(f"Using SOCKS5 proxy {proxy[1]}:{proxy[2]}")
+    client = TelegramClient(cfg["session"], int(cfg["api_id"]), cfg["api_hash"], proxy=proxy)
     await client.start(phone=cfg["phone"])
 
     if cfg.get("auto_join", False):

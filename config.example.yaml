@@ -24,3 +24,10 @@ alarm_sound: "alarm.wav"
 # Auto-join the listed channels on startup. Needed to receive updates from channels
 # the account is not already subscribed to.
 auto_join: true
+
+# Optional SOCKS5 proxy. Omit this section (or leave it empty) to connect directly.
+# proxy:
+#   host: "127.0.0.1"
+#   port: 9050
+#   username: null
+#   password: null

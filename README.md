@@ -74,6 +74,7 @@ Config lives in `pyproject.toml`. All functions are type-annotated.
 | `case_sensitive`| `false` (default) makes keyword matching case-insensitive.              |
 | `alarm_sound`   | Path to the alarm sound; defaults to the bundled `alarm.wav`.           |
 | `auto_join`     | If `true`, join the listed channels on startup.                         |
+| `proxy`         | Optional SOCKS5 proxy (`host`, `port`, optional `username`/`password`). Omit for a direct connection. |
 
 ## Audio
 
