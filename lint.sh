@@ -11,6 +11,6 @@ echo "== ruff format --check =="
 ruff format --check .
 
 echo "== mypy =="
-mypy drone_alarm.py alarm.py
+mypy drone_alarm.py alarm.py tts.py
 
 echo "All checks passed."

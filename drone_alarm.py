@@ -19,6 +19,7 @@ from telethon import TelegramClient, events
 from telethon.tl.functions.channels import JoinChannelRequest
 
 from alarm import Alarm
+from tts import Speaker
 
 Config = dict[str, Any]
 Pattern = tuple[str, re.Pattern[str]]
@@ -109,6 +110,13 @@ async def main() -> None:
         sound_path = os.path.join(HERE, sound_path)
     alarm = Alarm(sound_path)
 
+    tts_cfg = cfg.get("tts") or {}
+    speaker = Speaker(
+        enabled=tts_cfg.get("enabled", True),
+        voice=tts_cfg.get("voice"),
+        rate=tts_cfg.get("rate"),
+    )
+
     channels = cfg["channels"]
     proxy = build_proxy(cfg)
     if proxy:
@@ -125,9 +133,10 @@ async def main() -> None:
         text = event.raw_text or ""
         matched = [kw for kw, pat in patterns if pat.search(text)]
         if matched:
-            alarm.trigger()
             chat = await event.get_chat()
             print(format_alert(chat, matched, text))
+            await alarm.play()
+            await speaker.speak(text)
 
     print(f"Listening on {len(channels)} channel(s) for {len(patterns)} keyword(s).")
     print("Press Ctrl+C to stop.")

@@ -84,6 +84,7 @@ Config lives in `pyproject.toml`. All functions are type-annotated.
 | `alarm_sound`   | Path to the alarm sound; defaults to the bundled `alarm.wav`.           |
 | `auto_join`     | If `true`, join the listed channels on startup.                         |
 | `proxy`         | Optional SOCKS5 proxy (`host`, `port`, optional `username`/`password`). Omit for a direct connection. |
+| `tts`           | Read the matched message aloud after the alarm: `enabled`, optional `voice`, `rate`. |
 
 ## Audio
 
@@ -95,6 +96,14 @@ falls back to the terminal bell. Sanity-check playback independently of Telegram
 afplay alarm.wav        # macOS
 paplay alarm.wav        # Linux (PulseAudio)
 ```
+
+## Text-to-speech
+
+When `tts.enabled` is true, the matched message is **spoken aloud after the alarm sound**, using
+`say` on macOS or `espeak-ng`/`espeak`/`spd-say` on Linux (install one for spoken alerts). For
+Russian text, set a Russian voice via `tts.voice` — e.g. `"Milena"` on macOS (install it in System
+Settings) or `"ru"` for espeak on Linux. If no engine is found, alerts still play the alarm and
+print to the console.
 
 ## Note
 

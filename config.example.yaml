@@ -21,6 +21,15 @@ case_sensitive: false
 # Alarm sound played on match. Defaults to the bundled alarm.wav (works on macOS + Linux).
 alarm_sound: "alarm.wav"
 
+# Text-to-speech: read the matched message aloud after the alarm sound.
+# voice/rate are engine-specific and optional. For Russian, set a Russian voice:
+#   macOS  -> install one in System Settings, then e.g. voice: "Milena" or "Yuri"
+#   Linux  -> espeak-ng/espeak use voice: "ru"
+tts:
+  enabled: true
+  voice: null
+  rate: null      # words per minute (engine default if null)
+
 # Auto-join the listed channels on startup. Needed to receive updates from channels
 # the account is not already subscribed to.
 auto_join: true

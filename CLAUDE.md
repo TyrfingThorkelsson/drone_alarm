@@ -45,12 +45,15 @@ connection, import the module and call `pick_audio_player()` / `compile_patterns
   prompt. Do not propose switching to `python-telegram-bot` or the Bot API — it cannot satisfy the
   core requirement.
 - **Event-driven loop.** `@client.on(events.NewMessage(chats=channels))` fires per message;
-  the handler matches `event.raw_text` against precompiled regex patterns and triggers the alarm.
+  the handler matches `event.raw_text` against precompiled regex patterns, then `await`s
+  `Alarm.play()` followed by `Speaker.speak()` so the message is spoken *after* the beep.
   `auto_join` (config) subscribes the account to channels on startup so updates are received.
-- **Cross-platform audio is abstracted in `pick_audio_player()`** — macOS uses `afplay`; Linux
-  probes `paplay`/`aplay`/`ffplay`/`play` via `shutil.which`. The `Alarm` class caches the chosen
-  player and falls back to the terminal bell (`\a`) if none is found or the sound file is missing.
-  Playback is non-blocking (`subprocess.Popen`) so it never stalls the asyncio event loop.
+- **Audio/TTS are split into modules** ([alarm.py](alarm.py), [tts.py](tts.py)), each detecting a
+  CLI tool via `shutil.which` and degrading gracefully. `Alarm` (`pick_audio_player`): `afplay` on
+  macOS; `paplay`/`aplay`/`ffplay`/`play` on Linux, falling back to the terminal bell (`\a`).
+  `Speaker` (`pick_tts_engine`): `say` on macOS; `espeak-ng`/`espeak`/`spd-say` on Linux, no-op if
+  disabled or absent. Both use `asyncio.create_subprocess_exec` + `await proc.wait()` — they run on
+  the event loop but the handler awaits them so playback is ordered (beep → speech).
 - **Config-driven, fail-fast.** `load_config()` requires `config.yaml` (gitignored) and validates
   required keys; `compile_patterns()` exits with the offending index on an invalid regex. Keyword
   matching is case-insensitive unless `case_sensitive: true`.

@@ -1,13 +1,14 @@
 """Cross-platform alarm sound playback.
 
-Detects an available CLI audio player at startup and plays a sound file non-blockingly,
-falling back to the terminal bell if no player or sound file is available.
+Detects an available CLI audio player at startup and plays a sound file, falling back to
+the terminal bell if no player or sound file is available. `play()` awaits completion so
+callers can sequence follow-up audio (e.g. text-to-speech) after the alarm.
 """
 
+import asyncio
 import os
 import platform
 import shutil
-import subprocess
 import sys
 
 
@@ -42,14 +43,17 @@ class Alarm:
             print(f"Warning: alarm sound not found at {sound_path}; using terminal bell.")
             self.player = None
 
-    def trigger(self) -> None:
+    async def play(self) -> None:
+        """Play the alarm sound and wait for it to finish, or ring the terminal bell."""
         if self.player:
             try:
-                subprocess.Popen(
-                    self.player + [self.sound_path],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
+                proc = await asyncio.create_subprocess_exec(
+                    *self.player,
+                    self.sound_path,
+                    stdout=asyncio.subprocess.DEVNULL,
+                    stderr=asyncio.subprocess.DEVNULL,
                 )
+                await proc.wait()
                 return
             except Exception as e:  # pragma: no cover - environment dependent
                 if not self._warned:
