@@ -1,0 +1,26 @@
+# Copy this file to config.yaml and fill in your values.
+#   cp config.example.yaml config.yaml
+
+# Telegram API credentials from https://my.telegram.org (API development tools).
+api_id: 123456
+api_hash: "your_api_hash_here"
+phone: "+10000000000"          # account phone; used for the one-time login
+session: "drone_alarm"          # name of the local .session file Telethon creates
+
+# Public channels to monitor (@username, t.me link, or numeric id).
+channels:
+  - "@example_channel"
+  - "@another_channel"
+
+# Regex patterns matched against each message. Case-insensitive unless case_sensitive: true.
+keywords:
+  - "drone"
+
+case_sensitive: false
+
+# Alarm sound played on match. Defaults to the bundled alarm.wav (works on macOS + Linux).
+alarm_sound: "alarm.wav"
+
+# Auto-join the listed channels on startup. Needed to receive updates from channels
+# the account is not already subscribed to.
+auto_join: true

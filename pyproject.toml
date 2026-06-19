@@ -1,0 +1,25 @@
+[project]
+name = "drone_alarm"
+version = "0.1.0"
+description = "Telegram user-bot that alarms on keyword matches in public channels"
+requires-python = ">=3.10"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+# pyflakes, pycodestyle, isort, pyupgrade, flake8-bugbear, comprehensions
+select = ["E", "F", "I", "UP", "B", "C4"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+
+# Telethon ships no type stubs.
+[[tool.mypy.overrides]]
+module = ["telethon.*"]
+ignore_missing_imports = true

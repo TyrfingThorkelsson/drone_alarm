@@ -1,0 +1,12 @@
+# Local config with real credentials
+config.yaml
+
+# Telethon session files
+*.session
+*.session-journal
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
