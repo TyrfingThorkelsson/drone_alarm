@@ -103,6 +103,21 @@ async def auto_join(client: TelegramClient, channels: list[Any]) -> None:
 
 async def main() -> None:
     cfg = load_config()
+    login_only = "--login" in sys.argv[1:]
+
+    proxy = build_proxy(cfg)
+    if proxy:
+        print(f"Using SOCKS5 proxy {proxy[1]}:{proxy[2]}")
+    client = TelegramClient(cfg["session"], int(cfg["api_id"]), cfg["api_hash"], proxy=proxy)
+    await client.start(phone=cfg["phone"])
+
+    if login_only:
+        me = await client.get_me()
+        handle = me.username or me.first_name or "account"
+        print(f"Logged in as {handle}; session saved. You can start the service now.")
+        await client.disconnect()
+        return
+
     patterns = compile_patterns(cfg["keywords"], cfg.get("case_sensitive", False))
 
     sound_path = cfg.get("alarm_sound", "alarm.wav")
@@ -118,12 +133,6 @@ async def main() -> None:
     )
 
     channels = cfg["channels"]
-    proxy = build_proxy(cfg)
-    if proxy:
-        print(f"Using SOCKS5 proxy {proxy[1]}:{proxy[2]}")
-    client = TelegramClient(cfg["session"], int(cfg["api_id"]), cfg["api_hash"], proxy=proxy)
-    await client.start(phone=cfg["phone"])
-
     if cfg.get("auto_join", False):
         print("Joining channels...")
         await auto_join(client, channels)

@@ -48,6 +48,29 @@ On the first run Telegram sends a login code to your account — enter it at the
 2FA password if you have one). The login is cached in a `.session` file, so subsequent runs start
 without prompting. Leave the script running; it prints an alarm and plays a sound on each match.
 
+## Run as a service (Linux / systemd)
+
+A [`drone_alarm.service`](drone_alarm.service) **system** unit is included that runs the bot as the
+unprivileged `nobody` user.
+
+> **No audio under `nobody`.** The `nobody` user has no audio session, so the alarm sound and TTS
+> are not audible. Set `tts.enabled: false` in `config.yaml` and read alerts from the journal. Use
+> the `systemctl --user` approach instead if you need actual sound.
+
+### Installation
+
+From a checkout of the repo, run [`install.sh`](install.sh) as root. It copies the app to
+`/opt/drone_alarm`, builds the venv, sets permissions, performs the one-time Telegram login, and
+installs + starts the service:
+
+```bash
+sudo ./install.sh
+```
+
+The first run stops after creating `/opt/drone_alarm/config.yaml` so you can fill it in; edit it,
+then re-run `sudo /opt/drone_alarm/install.sh` to finish login and start the service. It's safe to
+re-run at any time to update the deployment.
+
 ## Linting & type checking
 
 ```bash

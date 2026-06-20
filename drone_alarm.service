@@ -1,0 +1,70 @@
+# systemd system service for drone_alarm, running as the unprivileged `nobody` user.
+#
+# NOTE ON AUDIO: `nobody` has no desktop/audio session, so the alarm sound and TTS
+# are NOT audible under this service. Set `tts.enabled: false` in config.yaml and read
+# alerts from the journal (journalctl). The alarm degrades to a terminal bell, which is
+# captured by the journal rather than played on a speaker. Use the user service variant
+# (systemctl --user) if you need actual sound.
+#
+# Layout assumed by this unit:
+#   /opt/drone_alarm/                  app code + venv (root-owned, read-only)
+#   /opt/drone_alarm/config.yaml       your config (see permissions step below)
+#   /var/lib/drone_alarm/              writable state — the .session lives here
+#                                      (created automatically by StateDirectory=)
+#
+# Install:
+#   1. Deploy the repo and venv to /opt/drone_alarm.
+#   2. Let `nobody` read the config without exposing secrets world-wide:
+#        sudo chown root:nogroup /opt/drone_alarm/config.yaml
+#        sudo chmod 640 /opt/drone_alarm/config.yaml
+#   3. Create the Telegram session interactively once (the service can't answer the
+#      login-code prompt), then hand it to `nobody` in the state dir. The .session is an
+#      account credential, so restrict it to the service user (0600):
+#        sudo mkdir -p /var/lib/drone_alarm
+#        cd /var/lib/drone_alarm
+#        sudo -u nobody /opt/drone_alarm/.venv/bin/python \
+#             /opt/drone_alarm/drone_alarm.py        # enter the code, then Ctrl+C
+#        sudo chown nobody:nogroup /var/lib/drone_alarm/drone_alarm.session
+#        sudo chmod 600 /var/lib/drone_alarm/drone_alarm.session
+#      (or generate drone_alarm.session elsewhere and
+#       `sudo mv drone_alarm.session /var/lib/drone_alarm/` before the chown/chmod)
+#   4. sudo cp /opt/drone_alarm/drone_alarm.service /etc/systemd/system/
+#      sudo systemctl daemon-reload
+#      sudo systemctl enable --now drone_alarm.service
+#      journalctl -u drone_alarm -f
+#
+# `nogroup` is the primary group of `nobody` on Debian/Ubuntu; on some distros it is
+# `nobody` — adjust Group= to match your system.
+
+[Unit]
+Description=drone_alarm Telegram keyword alarm bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=nobody
+Group=nogroup
+# Session file is written here; StateDirectory creates /var/lib/drone_alarm owned by the
+# service user even with ProtectSystem=strict in effect. The .session is an account
+# credential (anyone who can read it can log in as you), so keep the directory and the
+# files the service writes private: StateDirectoryMode=0700 + UMask=0077 (-> mode 0600).
+StateDirectory=drone_alarm
+StateDirectoryMode=0700
+WorkingDirectory=/var/lib/drone_alarm
+UMask=0077
+# Without this, Python fully buffers stdout when not attached to a TTY, so print()
+# output (the alerts) never reaches the journal. Flush it immediately.
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/drone_alarm/.venv/bin/python /opt/drone_alarm/drone_alarm.py
+Restart=on-failure
+RestartSec=5
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

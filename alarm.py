@@ -12,8 +12,17 @@ import shutil
 import sys
 
 
-def pick_audio_player() -> list[str] | None:
-    """Return the argv prefix for an available CLI audio player, or None."""
+def pick_audio_player(override: str | None = None) -> list[str] | None:
+    """Return the argv prefix for an available CLI audio player, or None.
+
+    `override` (e.g. "aplay -q" to force ALSA on a headless box) takes precedence when its
+    command is on PATH; otherwise auto-detect by platform.
+    """
+    if override:
+        cmd = override.split()
+        if cmd and shutil.which(cmd[0]):
+            return cmd
+        print(f"Configured audio_player {override!r} not found; auto-detecting instead.")
     system = platform.system()
     if system == "Darwin":
         candidates = [["afplay"]]
@@ -31,9 +40,9 @@ def pick_audio_player() -> list[str] | None:
 
 
 class Alarm:
-    def __init__(self, sound_path: str) -> None:
+    def __init__(self, sound_path: str, player: str | None = None) -> None:
         self.sound_path = sound_path
-        self.player = pick_audio_player()
+        self.player = pick_audio_player(player)
         self._warned = False
         if self.player:
             print(f"Audio player: {' '.join(self.player)}")
